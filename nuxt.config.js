@@ -13,6 +13,11 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
+    // Middleware Apis
+    serverMiddleware: {
+      '/api': '~/api',
+    },
+
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: [],
 
