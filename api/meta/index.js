@@ -5,3 +5,5 @@ const router = express.Router()
 router.get('/', function (req, res) {
   res.json({ metaData: 'this is meta data.' })
 })
+
+export default router

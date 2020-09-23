@@ -1,6 +1,7 @@
 import colors from 'vuetify/es5/util/colors'
 
 export default {
+  ssr: false,
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
     titleTemplate: '%s - BluePlace-server',
@@ -13,10 +14,10 @@ export default {
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
-    // Middleware Apis
-    serverMiddleware: {
-      '/api': '~/api',
-    },
+  // Middleware Apis
+  serverMiddleware: {
+    '/api': '~/api',
+  },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: [],
