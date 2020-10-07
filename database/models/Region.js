@@ -4,6 +4,7 @@ module.exports = function (sequlize, DataTypes) {
     {
       Id: {
         type: DataTypes.INTEGER(11),
+        autoIncrement: true,
         primaryKey: true,
         allowNull: false,
       },
@@ -52,6 +53,8 @@ module.exports = function (sequlize, DataTypes) {
     }
   )
   Region.associate = (models) => {
+    Region.belongsToMany(models.User, { through: 'UserRegion' })
+    Region.hasMany(models.InfectedPlace)
     // User.hasMany(models.Scene)
     // User.hasMany(models.MeasuringLine)
     // User.hasMany(models.Poi)

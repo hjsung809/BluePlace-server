@@ -40,7 +40,7 @@ Object.keys(db).forEach(function (modelName) {
 db.sql = sequelize
 db.Sequelize = Sequelize
 
-sequelize.sync().then(() => {
+sequelize.sync({ force: true }).then(() => {
   if (initData.init) {
     console.log(initData.init, global.dbInitialized)
     global.dbInitialized = true
