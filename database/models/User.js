@@ -4,16 +4,21 @@ module.exports = function (sequlize, DataTypes) {
     {
       Id: {
         type: DataTypes.INTEGER(11),
+        autoIncrement: true,
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
+      userEmail: {
         type: DataTypes.STRING(1024),
         unique: true,
         allowNull: false,
       },
       userPassword: {
         type: DataTypes.STRING(1024),
+        allowNull: false,
+      },
+      salt: {
+        type: DataTypes.STRING(100),
         allowNull: false,
       },
       userPhoneNumber: {
@@ -24,12 +29,23 @@ module.exports = function (sequlize, DataTypes) {
     {
       tableName: 'User',
       freezeTableName: false,
-      timestamps: false,
+      timestamps: true,
       underscored: false,
     }
   )
   User.associate = (models) => {
-    // User.hasMany(models.Scene)
+    User.hasOne(models.Session)
+    User.hasMany(models.Clique, {
+      as: 'CliqueOwner',
+      foreignKey: 'CliqueOwnerId',
+    })
+    User.hasOne(models.InfectedUser)
+    User.belongsToMany(User, {
+      as: 'RelatedUser',
+      through: 'UserClose',
+    })
+    User.belongsToMany(models.Region, { through: 'UserRegion' })
+    User.belongsToMany(models.Clique, { through: 'UserClique' })
     // User.hasMany(models.MeasuringLine)
     // User.hasMany(models.Poi)
   }
