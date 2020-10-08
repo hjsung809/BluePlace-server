@@ -2,7 +2,7 @@ module.exports = function (sequlize, DataTypes) {
   const Session = sequlize.define(
     'Session',
     {
-      key: {
+      Id: {
         type: DataTypes.STRING(1024),
         primaryKey: true,
         allowNull: false,

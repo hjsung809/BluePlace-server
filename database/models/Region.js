@@ -55,9 +55,6 @@ module.exports = function (sequlize, DataTypes) {
   Region.associate = (models) => {
     Region.belongsToMany(models.User, { through: 'UserRegion' })
     Region.hasMany(models.InfectedPlace)
-    // User.hasMany(models.Scene)
-    // User.hasMany(models.MeasuringLine)
-    // User.hasMany(models.Poi)
   }
   return Region
 }

@@ -4,6 +4,7 @@ import Sequelize from 'sequelize'
 
 import config from './data/config.json'
 import initData from './data/initData.json'
+import { initCliqueType, initRegion } from './init'
 
 const sequelize = new Sequelize(
   config.database,
@@ -39,12 +40,14 @@ Object.keys(db).forEach(function (modelName) {
 
 db.sql = sequelize
 db.Sequelize = Sequelize
-
-sequelize.sync({ force: true }).then(() => {
-  if (initData.init) {
-    console.log(initData.init, global.dbInitialized)
+;(async () => {
+  await sequelize.sync({ force: initData.init && !global.dbInitialized })
+  console.log('init flags', initData.init, global.dbInitialized)
+  if (initData.init && !global.dbInitialized) {
     global.dbInitialized = true
+    await initCliqueType(db.CliqueType)
+    await initRegion(db.Region)
   }
-})
+})()
 
 export default db

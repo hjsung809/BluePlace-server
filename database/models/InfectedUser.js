@@ -8,19 +8,11 @@ module.exports = function (sequlize, DataTypes) {
         primaryKey: true,
         allowNull: false,
       },
-      infectedDate: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      infectedTime: {
-        type: DataTypes.TIME,
-        allowNull: false,
-      },
     },
     {
       tableName: 'InfectedUser',
       freezeTableName: false,
-      timestamps: false,
+      timestamps: true,
       underscored: false,
     }
   )

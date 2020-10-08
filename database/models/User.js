@@ -29,18 +29,23 @@ module.exports = function (sequlize, DataTypes) {
     {
       tableName: 'User',
       freezeTableName: false,
-      timestamps: false,
+      timestamps: true,
       underscored: false,
     }
   )
   User.associate = (models) => {
     User.hasOne(models.Session)
+    User.hasMany(models.Clique, {
+      as: 'CliqueOwner',
+      foreignKey: 'CliqueOwnerId',
+    })
     User.hasOne(models.InfectedUser)
     User.belongsToMany(User, {
       as: 'RelatedUser',
-      through: 'CloseUser',
+      through: 'UserClose',
     })
     User.belongsToMany(models.Region, { through: 'UserRegion' })
+    User.belongsToMany(models.Clique, { through: 'UserClique' })
     // User.hasMany(models.MeasuringLine)
     // User.hasMany(models.Poi)
   }

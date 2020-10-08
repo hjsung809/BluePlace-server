@@ -44,7 +44,7 @@ module.exports = function (sequlize, DataTypes) {
     {
       tableName: 'InfectedPlace',
       freezeTableName: false,
-      timestamps: false,
+      timestamps: true,
       underscored: false,
     }
   )

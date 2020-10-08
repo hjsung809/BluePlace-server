@@ -78,13 +78,12 @@ router.post('/', function (req, res) {
         userPhoneNumber,
       })
       res.status(201).end()
-      return
     } catch (e) {
       console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
     }
-    res.status(400).json({
-      errorMessage,
-    })
   })()
 })
 
@@ -96,6 +95,11 @@ router.post('/login', function (req, res) {
   const userEmail = req.body.userEmail
   const userPassword = req.body.userPassword
 
+  // Cookies that have not been signed
+  // console.log('Cookies: ', req.cookies)
+
+  // Cookies that have been signed
+  // console.log('Signed Cookies: ', req.signedCookies)
   ;(async () => {
     let errorMessage = ''
     try {
@@ -122,30 +126,96 @@ router.post('/login', function (req, res) {
       // console.log('password', password)
 
       if (user.userPassword === password.toString('base64')) {
+        // 기존 세션 삭제.
+        if (req.cookies.BPSID) {
+          const previousSession = await db.Session.findOne({
+            where: {
+              Id: req.cookies.BPSID,
+            },
+          })
+
+          if (previousSession) {
+            await previousSession.destroy()
+          }
+        }
         // 세션 발급.
-        const sessionKey = uuid4()
+        const sessionId = uuid4()
         const session = await db.Session.create({
-          key: sessionKey,
+          Id: sessionId,
         })
         session.setUser(user)
 
         // 쿠키 지정.
-        res.cookie('SKEY', sessionKey)
+        res.cookie('BPSID', sessionId)
         res.status(200).json({
           errorMessage: '로그인에 성공 했습니다.',
         })
-        return
       } else {
         errorMessage = '비밀번호가 일치하지 않습니다.'
         throw new Error('password invalid')
       }
     } catch (e) {
-      // console.log(e)
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
     }
+  })()
+})
 
-    res.status(400).json({
-      errorMessage,
-    })
+// 사용자 감염시
+router.post('/infect', function (req, res) {
+  // const userEmail = req.body.userEmail
+  // const userPassword = req.body.userPassword
+
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            },
+          ],
+        })
+        // console.log(session)
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        const pIUser = await db.InfectedUser.findOne({
+          where: {
+            UserID: session.User.Id,
+          },
+        })
+
+        if (pIUser) {
+          errorMessage = '이미 감염 등록된 사용자 입니다.'
+          throw new Error('aleady infected user.')
+        }
+        // 추후에 추가 정보 정의.
+        const iUser = await db.InfectedUser.create()
+        // console.log(iUser)
+        iUser.setUser(session.User)
+        res.status(201).json({
+          message: '감염 등록에 성공하였습니다.',
+        })
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
   })()
 })
 
@@ -154,7 +224,74 @@ router.put('/', function (req, res) {
 })
 
 router.delete('/', function (req, res) {
-  res.json({ metaData: 'this is user data.' })
+  const userEmail = req.body.userEmail
+  const userPassword = req.body.userPassword
+
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      // 세션이 없을 때.
+      if (!req.cookies.BPSID) {
+        errorMessage = '삭제 전에 로그인 부터 해야합니다.'
+        throw new Error('before delete user, login first.')
+      }
+      // 세션 찾기
+      const session = await db.Session.findOne({
+        where: {
+          Id: req.cookies.BPSID,
+        },
+      })
+      // 해당 세션이 없을 때.
+      if (!session) {
+        errorMessage = '유효하지 않은 세션입니다.'
+        throw new Error('Invalid Session.')
+      }
+      // 이메일 및 비밀번호가 입력되지 않았을 때.
+      if (!userEmail || !userPassword) {
+        errorMessage = '비밀번호 혹은 이메일이 입력되지 않습니다.'
+        throw new Error('Email or password is empty.')
+      }
+
+      // 해당 유저 찾기.
+      const user = await db.User.findOne({
+        where: {
+          userEmail,
+        },
+      })
+      // 유저가 없을 때
+      if (user === null) {
+        errorMessage = 'Email이 유효하지 않습니다.'
+        throw new Error('user not found.')
+      }
+      // 해당 세션의 유저가 입력된 유저와 다를 때
+      if (session.UserId !== user.Id) {
+        errorMessage = '삭제할 수 없는 유저입니다.'
+        throw new Error('Invalid target user.')
+      }
+
+      const password = await convertPassword(
+        userPassword,
+        Buffer.from(user.salt, 'base64')
+      )
+
+      if (user.userPassword === password.toString('base64')) {
+        await session.destroy()
+        await user.destroy()
+
+        res.status(200).json({
+          errorMessage: '회원 탈퇴에 성공 했습니다.',
+        })
+      } else {
+        errorMessage = '비밀번호가 일치하지 않습니다.'
+        throw new Error('password invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
 })
 
 export default router

@@ -1,20 +1,21 @@
 /* eslint-disable camelcase */
 module.exports = function (sequlize, DataTypes) {
-  const CloseUser = sequlize.define(
-    'CloseUser',
+  const UserClose = sequlize.define(
+    'UserClose',
     {
-      hLookat: {
-        type: DataTypes.DOUBLE,
+      active: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
         allowNull: false,
       },
     },
     {
-      tableName: 'CloseUser',
+      tableName: 'UserClose',
       freezeTableName: false,
-      timestamps: false,
+      timestamps: true,
       underscored: false,
     }
   )
 
-  return CloseUser
+  return UserClose
 }
