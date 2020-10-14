@@ -46,8 +46,6 @@ module.exports = function (sequlize, DataTypes) {
     })
     User.belongsToMany(models.Region, { through: 'UserRegion' })
     User.belongsToMany(models.Clique, { through: 'UserClique' })
-    // User.hasMany(models.MeasuringLine)
-    // User.hasMany(models.Poi)
   }
   return User
 }

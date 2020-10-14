@@ -21,8 +21,6 @@ module.exports = function (sequlize, DataTypes) {
   )
   Session.associate = (models) => {
     Session.belongsTo(models.User)
-    // User.hasMany(models.MeasuringLine)
-    // User.hasMany(models.Poi)
   }
   return Session
 }

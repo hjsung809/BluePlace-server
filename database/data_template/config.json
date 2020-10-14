@@ -1,0 +1,13 @@
+{
+    "username": "",
+	"password": "",
+	"database": "",
+	"host": "",
+	"port": "3306",
+    "dialect": "mysql",
+    "logging": false,
+    "define": {
+        "timestamps": false,
+        "underscored": false
+    }
+}
