@@ -3,6 +3,7 @@ import db from '../../database'
 
 const router = express.Router()
 
+// 사용자 그룹 생성
 router.post('/', function (req, res) {
   const cliqueName = req.body.cliqueName
   const cliqueNameEn = req.body.cliqueNameEn
@@ -62,102 +63,8 @@ router.post('/', function (req, res) {
   })()
 })
 
-// 자기가 만든 그룹 리스트업.
-router.get('/management', function (req, res) {
-  ;(async () => {
-    let errorMessage = ''
-    try {
-      if (req.cookies.BPSID) {
-        const cliqueInfo = await db.Session.findOne({
-          where: {
-            Id: req.cookies.BPSID,
-          },
-          attributes: ['createdAt', 'updatedAt', 'UserId'],
-          include: [
-            {
-              model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
-              include: [
-                {
-                  model: db.Clique,
-                  as: 'CliqueOwner',
-                  include: [
-                    {
-                      model: db.User,
-                      attributes: ['Id', 'userEmail', 'userPhoneNumber'],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        })
-
-        if (!cliqueInfo) {
-          errorMessage = '세션이 유효하지 않습니다.'
-          throw new Error('session invalid')
-        }
-
-        res.status(200).json(cliqueInfo)
-      } else {
-        errorMessage = '로그인이 되지않았습니다.'
-        throw new Error('session invalid')
-      }
-    } catch (e) {
-      console.log(e)
-      res.status(400).json({
-        errorMessage,
-      })
-    }
-  })()
-})
-
 // // 자기가 만든 그룹 삭제.
-// router.delete('/management', function (req, res) {
-//   ;(async () => {
-//     let errorMessage = ''
-//     try {
-//       if (req.cookies.BPSID) {
-//         const session = await db.Session.findOne({
-//           where: {
-//             Id: req.cookies.BPSID,
-//           },
-//           include: [
-//             {
-//               model: db.User,
-//               attributes: ['Id', 'userEmail', 'userPhoneNumber'],
-//             },
-//           ],
-//         })
-
-//         if (!session) {
-//           errorMessage = '유효하지 않은 세션입니다.'
-//           throw new Error('session invalid')
-//         }
-
-//         const cliques = await db.Clique.findAll({
-//           where: {
-
-//           }
-//         })
-
-//         res.status(201).json({
-//           message: '그룹 가입 요청이 성공하였습니다.',
-//         })
-//       } else {
-//         errorMessage = '로그인이 되지않았습니다.'
-//         throw new Error('session invalid')
-//       }
-//     } catch (e) {
-//       console.log(e)
-//       res.status(400).json({
-//         errorMessage,
-//       })
-//     }
-//   })()
-// })
-
-router.post('/management/banish', function (req, res) {
+router.delete('/', function (req, res) {
   const CliqueId = req.body.CliqueId
 
   ;(async () => {
@@ -181,96 +88,28 @@ router.post('/management/banish', function (req, res) {
           throw new Error('session invalid')
         }
 
-        const puc = await db.UserClique.findOne({
+        // 해당 유저가 가진 CliqueOwner
+        const clique = await db.Clique.findOne({
           where: {
-            UserId: session.User.Id,
-            CliqueId,
+            Id: CliqueId,
+            CliqueOwnerId: session.User.Id,
           },
         })
 
-        if (puc) {
-          if (puc.active) {
-            errorMessage = '이미 가입된 그룹입니다.'
-            throw new Error('already joined group.')
-          } else {
-            errorMessage = '이미 가입 요청을 보낸 그룹입니다.'
-            throw new Error('already join request sended.')
-          }
+        if (!clique) {
+          errorMessage = '해당 그룹을 삭제할 수 없습니다.'
+          throw new Error('only owner can remove clique.')
         }
-
-        // 관계를 만들고, 허가를 기다림.
-        await db.UserClique.create({
-          active: 0,
-          UserId: session.User.Id,
-          CliqueId,
-        })
+        // console.log(clique)
+        await clique.destroy()
+        // await db.Clique.delete({
+        //   where: {
+        //     Id: clique.Id,
+        //   },
+        // })
 
         res.status(201).json({
-          message: '그룹 가입 요청이 성공하였습니다.',
-        })
-      } else {
-        errorMessage = '로그인이 되지않았습니다.'
-        throw new Error('session invalid')
-      }
-    } catch (e) {
-      console.log(e)
-      res.status(400).json({
-        errorMessage,
-      })
-    }
-  })()
-})
-
-router.post('/management/approve', function (req, res) {
-  const CliqueId = req.body.CliqueId
-
-  ;(async () => {
-    let errorMessage = ''
-    try {
-      if (req.cookies.BPSID) {
-        const session = await db.Session.findOne({
-          where: {
-            Id: req.cookies.BPSID,
-          },
-          include: [
-            {
-              model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
-            },
-          ],
-        })
-
-        if (!session) {
-          errorMessage = '유효하지 않은 세션입니다.'
-          throw new Error('session invalid')
-        }
-
-        const puc = await db.UserClique.findOne({
-          where: {
-            UserId: session.User.Id,
-            CliqueId,
-          },
-        })
-
-        if (puc) {
-          if (puc.active) {
-            errorMessage = '이미 가입된 그룹입니다.'
-            throw new Error('already joined group.')
-          } else {
-            errorMessage = '이미 가입 요청을 보낸 그룹입니다.'
-            throw new Error('already join request sended.')
-          }
-        }
-
-        // 관계를 만들고, 허가를 기다림.
-        await db.UserClique.create({
-          active: 0,
-          UserId: session.User.Id,
-          CliqueId,
-        })
-
-        res.status(201).json({
-          message: '그룹 가입 요청이 성공하였습니다.',
+          message: '해당 그룹을 삭제하였습니다.',
         })
       } else {
         errorMessage = '로그인이 되지않았습니다.'
@@ -350,7 +189,7 @@ router.post('/join', function (req, res) {
   })()
 })
 
-// 가입한 그룹 탈퇴.
+// 가입했거나 가입 신청한 그룹 탈퇴.
 router.post('/withdraw', function (req, res) {
   const CliqueId = req.body.CliqueId
 
@@ -375,32 +214,220 @@ router.post('/withdraw', function (req, res) {
           throw new Error('session invalid')
         }
 
-        const puc = await db.UserClique.findOne({
+        const userClique = await db.UserClique.findOne({
           where: {
             UserId: session.User.Id,
             CliqueId,
           },
         })
 
-        if (puc) {
-          if (puc.active) {
-            errorMessage = '이미 가입된 그룹입니다.'
-            throw new Error('already joined group.')
-          } else {
-            errorMessage = '이미 가입 요청을 보낸 그룹입니다.'
-            throw new Error('already join request sended.')
-          }
+        if (!userClique) {
+          errorMessage = '이미 관계없는 그룹입니다.'
+          throw new Error('already withdrawn group.')
         }
 
-        // 관계를 만들고, 허가를 기다림.
-        await db.UserClique.create({
-          active: 0,
-          UserId: session.User.Id,
-          CliqueId,
-        })
+        await userClique.destroy()
 
         res.status(201).json({
-          message: '그룹 가입 요청이 성공하였습니다.',
+          message: '그룹 탈퇴에 성공하였습니다.',
+        })
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+
+// 자기가 만든 그룹 리스트업.
+router.get('/management', function (req, res) {
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const cliqueInfo = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          attributes: ['createdAt', 'updatedAt', 'UserId'],
+          include: [
+            {
+              // 세션으로 부터 유저 찾기.
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              include: [
+                {
+                  // 해당 유저가 Owner인 그룹 찾기.
+                  model: db.Clique,
+                  as: 'CliqueOwner',
+                  include: [
+                    {
+                      // 해당 그룹에 관계된 유저 찾기.
+                      model: db.User,
+                      attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        })
+
+        if (!cliqueInfo) {
+          errorMessage = '세션이 유효하지 않습니다.'
+          throw new Error('session invalid')
+        }
+
+        res.status(200).json(cliqueInfo)
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+
+router.post('/management/banish', function (req, res) {
+  const CliqueId = req.body.CliqueId
+  const UserId = req.body.UserId // 추방시킬 유저의 아이디.
+
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            },
+          ],
+        })
+
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        if (session.User.Id === UserId) {
+          errorMessage = '소유자는 그룹을 탈퇴할 수 없습니다.'
+          throw new Error('owner cant leave clique.')
+        }
+
+        const clique = await db.Clique.findOne({
+          where: {
+            Id: CliqueId,
+            CliqueOwnerId: session.User.Id,
+          },
+        })
+
+        if (!clique) {
+          errorMessage = '관리할 수 없는 그룹입니다.'
+          throw new Error('clique invalid')
+        }
+
+        const userClique = await db.UserClique.findOne({
+          where: {
+            CliqueId: clique.Id,
+            UserId,
+          },
+        })
+
+        if (!userClique) {
+          errorMessage = '해당 유저는 그룹에 포함되어 있지 않습니다.'
+          throw new Error('already banished user.')
+        }
+        await userClique.destroy()
+
+        res.status(201).json({
+          message: '유저를 그룹에서 추방시켰습니다.',
+        })
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+
+router.post('/management/approve', function (req, res) {
+  const CliqueId = req.body.CliqueId
+  const UserId = req.body.UserId // 가입 시킬 유저의 아이디.
+
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            },
+          ],
+        })
+
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+        // 요청 보낸 사람 소유의 해당 clique 찾기.
+        const clique = await db.Clique.findOne({
+          where: {
+            Id: CliqueId,
+            CliqueOwnerId: session.User.Id,
+          },
+        })
+
+        if (!clique) {
+          errorMessage = '관리할 수 없는 그룹입니다.'
+          throw new Error('clique invalid')
+        }
+        // console.log(clique)
+
+        const userClique = await db.UserClique.findOne({
+          where: {
+            CliqueId: clique.Id,
+            UserId,
+          },
+        })
+
+        if (!userClique) {
+          errorMessage = '해당 유저는 그룹과 관계 없습니다.'
+          throw new Error('user did not send join request')
+        }
+
+        if (userClique.active) {
+          errorMessage = '해당 유저는 이미 그룹에 포함되어 있습니다.'
+          throw new Error('already banished user.')
+        }
+
+        userClique.active = 1
+        await userClique.save()
+
+        res.status(201).json({
+          message: '유저를 그룹에서 가입 시켰습니다.',
         })
       } else {
         errorMessage = '로그인이 되지않았습니다.'

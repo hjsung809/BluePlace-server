@@ -12,7 +12,7 @@ app.use(cookieParser())
 
 app.use('/meta', meta)
 app.use('/users', users)
-app.use('/region', region)
+app.use('/regions', region)
 app.use('/cliques', cliques)
 
 export default app

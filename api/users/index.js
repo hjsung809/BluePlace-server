@@ -39,6 +39,7 @@ router.get('/', function (req, res) {
   res.json({ userData: 'this is user data.' })
 })
 
+// 회원 가입
 router.post('/', function (req, res) {
   const userEmail = req.body.userEmail
   const userPassword = req.body.userPassword
@@ -293,5 +294,62 @@ router.delete('/', function (req, res) {
     }
   })()
 })
+
+router.post('/close-user', function (req, res) {
+  // const userEmail = req.body.userEmail
+  // const userPassword = req.body.userPassword
+
+  // 수정 되어야함.
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            },
+          ],
+        })
+        // console.log(session)
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        const pIUser = await db.InfectedUser.findOne({
+          where: {
+            UserID: session.User.Id,
+          },
+        })
+
+        if (pIUser) {
+          errorMessage = '이미 감염 등록된 사용자 입니다.'
+          throw new Error('aleady infected user.')
+        }
+        // 추후에 추가 정보 정의.
+        const iUser = await db.InfectedUser.create()
+        // console.log(iUser)
+        iUser.setUser(session.User)
+        res.status(201).json({
+          message: '감염 등록에 성공하였습니다.',
+        })
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+// close user 구현해야함.
 
 export default router
