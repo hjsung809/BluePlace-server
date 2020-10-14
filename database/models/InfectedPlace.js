@@ -18,7 +18,7 @@ module.exports = function (sequlize, DataTypes) {
       },
       adress: {
         type: DataTypes.STRING(1024),
-        allowNull: false,
+        allowNull: true,
       },
       note: {
         type: DataTypes.STRING(1024),
@@ -32,13 +32,23 @@ module.exports = function (sequlize, DataTypes) {
         type: DataTypes.DOUBLE,
         allowNull: false,
       },
-      infectedDate: {
-        type: DataTypes.DATE,
+      size: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+        defaultValue: 30,
+      },
+      firstVisitTime: {
+        type: DataTypes.Date,
         allowNull: false,
       },
-      infectedTime: {
-        type: DataTypes.TIME,
+      lastVisitTime: {
+        type: DataTypes.Date,
         allowNull: false,
+      },
+      visitCount: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
       },
     },
     {
@@ -50,7 +60,7 @@ module.exports = function (sequlize, DataTypes) {
   )
   InfectedPlace.associate = (models) => {
     InfectedPlace.belongsTo(models.InfectedUser)
-    InfectedPlace.belongsTo(models.Region)
+    // InfectedPlace.belongsTo(models.Region)
     // User.hasMany(models.MeasuringLine)
     // User.hasMany(models.Poi)
   }
