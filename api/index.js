@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser'
 import meta from './meta'
 import region from './regions'
 import cliques from './cliques'
+import closeusers from './closeusers'
 import users from './users'
 
 const app = express()
@@ -14,5 +15,6 @@ app.use('/meta', meta)
 app.use('/users', users)
 app.use('/regions', region)
 app.use('/cliques', cliques)
+app.use('/closeusers', closeusers)
 
 export default app

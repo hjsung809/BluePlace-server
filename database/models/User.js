@@ -43,6 +43,12 @@ module.exports = function (sequlize, DataTypes) {
     User.belongsToMany(User, {
       as: 'RelatedUser',
       through: 'UserClose',
+      foreignKey: 'RelatedUserId'
+    })
+    User.belongsToMany(User, {
+      as: 'SelfUser',
+      through: 'UserClose',
+      foreignKey: 'UserId'
     })
     User.belongsToMany(models.Region, { through: 'UserRegion' })
     User.belongsToMany(models.Clique, { through: 'UserClique' })
