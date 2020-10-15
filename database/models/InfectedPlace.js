@@ -38,11 +38,11 @@ module.exports = function (sequlize, DataTypes) {
         defaultValue: 30,
       },
       firstVisitTime: {
-        type: DataTypes.Date,
+        type: DataTypes.DATE,
         allowNull: false,
       },
       lastVisitTime: {
-        type: DataTypes.Date,
+        type: DataTypes.DATE,
         allowNull: false,
       },
       visitCount: {
