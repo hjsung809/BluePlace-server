@@ -6,6 +6,7 @@ import cliques from './cliques'
 import closeusers from './closeusers'
 import users from './users'
 
+
 const app = express()
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: false }))
@@ -16,5 +17,6 @@ app.use('/users', users)
 app.use('/regions', region)
 app.use('/cliques', cliques)
 app.use('/closeusers', closeusers)
+
 
 export default app

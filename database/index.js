@@ -5,6 +5,7 @@ import Sequelize from 'sequelize'
 import config from './data/config.json'
 import initData from './data/initData.json'
 import { initCliqueType, initRegion } from './init'
+import crawling from '../crawling'
 
 const sequelize = new Sequelize(
   config.database,
@@ -49,6 +50,8 @@ db.Sequelize = Sequelize
     global.dbInitialized = true
     await initCliqueType(db.CliqueType)
     await initRegion(db.Region)
+    
+    crawling.start(db)
   }
 })()
 

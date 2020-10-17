@@ -24,17 +24,37 @@ module.exports = function (sequlize, DataTypes) {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
-      deathCnt: {
+      incDecAllCnt: {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         defaultValue: 0,
       },
-      incDecCnt: {
+      incDecInCnt: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      incDecOutCnt: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      patientCnt: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      isolProcCnt: {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         defaultValue: 0,
       },
       isolClearCnt: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      deathCnt: {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         defaultValue: 0,
