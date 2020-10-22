@@ -36,7 +36,174 @@ const convertPassword = (password, salt) =>
 // }
 
 router.get('/', function (req, res) {
-  res.json({ userData: 'this is user data.' })
+  
+  // Get Parameters
+  const phoneNumber = req.query.phonenumber
+  const email = req.query.email
+  const name = req.query.name
+
+
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber']
+            }
+          ]
+        })
+
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        if(!phoneNumber && !email && !name){
+          errorMessage = 'Email이나 PhoneNumber가 없습니다.'
+          throw new Error('session invalid')
+        }
+
+        let searchedUser
+        console.log(phoneNumber, email)
+        if(phoneNumber){
+          searchedUser = await db.User.findOne({
+            where: {
+              userPhoneNumber: phoneNumber,
+            },
+            attributes: [
+              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+            ]
+          })
+        }else if(email) {
+          searchedUser = await db.User.findOne({
+            where: {
+              userEmail: email,
+            },
+            attributes: [
+              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+            ]
+          })
+        }
+
+        if(!searchedUser) {
+          errorMessage = '유저 검색 결과가 없습니다.'
+          throw new Error('Query result is empty')
+        }
+
+        res.status(200).json(
+          searchedUser
+        )
+
+      } else {
+        errorMessage = '로그인에 실패했습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+
+router.get('/relatedusers', function (req, res) {
+  
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber']
+            }
+          ]
+        })
+
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        let searchedUser = await db.User.findOne({
+          where: {
+            Id: session.User.Id,
+          },
+          attributes: ['Id'],
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              on: {
+                active: 1,
+              },
+              as: 'RelatedUser',
+            },
+            {
+              model: db.Clique,
+              as: 'CliqueMember',
+              attributes: ['Id', 'cliqueName', 'cliqueNameEn', 'cliqueTypeId'],
+              include: [
+                {
+                  model: db.CliqueType,
+                },
+                {
+                  model: db.User,
+                  attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                  on: {
+                    Id: {ne: session.User.Id},
+                  },
+                  as: 'CliqueMember',
+                }
+              ]
+            },
+            {
+              model: db.Region,
+              include: [
+                {
+                  model: db.User,
+                  attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                  on: {
+                    Id: {ne: session.User.Id},
+                  }
+                },
+              ],
+            }
+          ]
+        })
+        
+
+        if(!searchedUser) {
+          errorMessage = '유저 검색 결과가 없습니다.'
+          throw new Error('Query result is empty')
+        }
+
+        res.status(200).json(
+          searchedUser
+        )
+
+      } else {
+        errorMessage = '로그인에 실패했습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
 })
 
 router.post('/session', function (req, res) {

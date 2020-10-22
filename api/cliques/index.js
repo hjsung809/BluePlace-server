@@ -297,6 +297,56 @@ router.get('/management', function (req, res) {
   })()
 })
 
+// 검색.
+router.get('/', function (req, res) {
+
+  // Get Parameters
+  const cliqueName = req.query.cliquename
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          attributes: ['createdAt', 'updatedAt', 'UserId'],
+          include: [
+            {
+              // 세션으로 부터 유저 찾기.
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            },
+          ],
+        })
+
+        if (!session) {
+          errorMessage = '세션이 유효하지 않습니다.'
+          throw new Error('session invalid')
+        }
+        
+        const cliques = await db.Clique.findAll({
+          where: {
+            cliqueName: {
+              [db.Sequelize.Op.like]: '%' + cliqueName + '%'
+            }
+          }
+        })
+        console.log(cliques)
+        res.status(200).json(cliques)
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
+
 router.post('/management/banish', function (req, res) {
   const CliqueId = req.body.CliqueId
   const UserId = req.body.UserId // 추방시킬 유저의 아이디.
