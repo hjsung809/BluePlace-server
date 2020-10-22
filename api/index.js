@@ -5,6 +5,7 @@ import region from './regions'
 import cliques from './cliques'
 import closeusers from './closeusers'
 import users from './users'
+import infectedplace from './infectedplace'
 
 
 const app = express()
@@ -17,6 +18,7 @@ app.use('/users', users)
 app.use('/regions', region)
 app.use('/cliques', cliques)
 app.use('/closeusers', closeusers)
+app.use('/infectedplace', infectedplace)
 
 
 export default app
