@@ -50,6 +50,11 @@ module.exports = function (sequlize, DataTypes) {
         allowNull: false,
         defaultValue: 0,
       },
+      level: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       tableName: 'InfectedPlace',
