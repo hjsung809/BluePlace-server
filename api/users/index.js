@@ -39,6 +39,46 @@ router.get('/', function (req, res) {
   res.json({ userData: 'this is user data.' })
 })
 
+router.post('/session', function (req, res) {
+  ;(async () => {
+    const errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const session = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber']
+            }
+          ]
+        })
+
+        if (!session) {
+          errorMessage = '유효하지 않은 세션입니다.'
+          throw new Error('session invalid')
+        }
+
+        res.status(200).json(
+          '유효한 세션입니다.'
+        )
+
+      } else {
+        errorMessage = '로그인에 실패했습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+  res.json({ userData: 'this is user data.' })
+})
+
 // 회원 가입
 router.post('/', function (req, res) {
   const userEmail = req.body.userEmail
