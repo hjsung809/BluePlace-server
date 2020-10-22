@@ -76,7 +76,6 @@ router.post('/session', function (req, res) {
       })
     }
   })()
-  res.json({ userData: 'this is user data.' })
 })
 
 // 회원 가입
