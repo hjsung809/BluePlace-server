@@ -51,7 +51,7 @@ module.exports = function (sequlize, DataTypes) {
       foreignKey: 'UserId'
     })
     User.belongsToMany(models.Region, { through: 'UserRegion' })
-    User.belongsToMany(models.Clique, { through: 'UserClique' })
+    User.belongsToMany(models.Clique, { as: 'CliqueMember', through: 'UserClique' })
   }
   return User
 }

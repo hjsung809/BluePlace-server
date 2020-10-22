@@ -26,7 +26,7 @@ module.exports = function (sequlize, DataTypes) {
   )
   Clique.associate = (models) => {
     // Clique.hasMany(models.Session)
-    Clique.belongsToMany(models.User, { through: 'UserClique' })
+    Clique.belongsToMany(models.User, {  as: 'CliqueMember', through: 'UserClique' })
     Clique.belongsTo(models.User, { as: 'CliqueOwner' })
     Clique.belongsTo(models.CliqueType)
   }
