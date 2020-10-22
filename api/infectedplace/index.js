@@ -227,11 +227,18 @@ router.post('/', function (req, res) {
           throw new Error('session invalid')
         }
 
+        const infectedUser = await db.InfectedUser.findOrCreate({
+          where: {
+            UserId: session.User.Id
+          }
+        })
+
         // console.log(session.User.Id)
         
         infectedplaces.forEach(async place => {
           console.log(place)
           const infectedplaces = await db.InfectedPlace.create(place)
+          infectedplaces.setInfectedUser(infectedUser[0])
         })
 
         res.status(200).json(infectedplaces)
