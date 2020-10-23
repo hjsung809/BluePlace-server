@@ -299,7 +299,7 @@ router.get('/', function (req, res) {
             },
           ],
         })
-
+        res.setHeader("Content-Type", "application/json");
         res.status(200).json(closeuserInfo)
       } else {
         errorMessage = '로그인이 되지않았습니다.'
@@ -351,13 +351,13 @@ router.get('/request', function (req, res) {
             include: [
               {
                 model: db.User,
+                as: 'SelfUser',
                 through: {
                   where: {
                     active: 0,
                   },
                   attributes: ['UserId', 'RelatedUserId', 'active']
                 },
-                as: 'RelatedUser',
                 attributes: ['Id', 'userEmail', 'userPhoneNumber'],
               },
             ],
