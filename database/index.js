@@ -43,15 +43,15 @@ db.sql = sequelize
 db.Sequelize = Sequelize
 ;(async () => {
   // initData.init이 true 일때, 한번만 실행되게 함. global(전역)에 dbInitialized를 선언하여 검사.
-  await sequelize.sync({ force: initData.init && !global.dbInitialized })
+  await sequelize.sync({ force: initData.init && !global.dbInitialized }).then(e => {
+    crawling.start(db)
+  })
   // console.log('init flags', initData.init, global.dbInitialized)
   if (initData.init && !global.dbInitialized) {
     // global.dbInitialized 를 true로 하여, 다시 실행되지 않게함.
     global.dbInitialized = true
     await initCliqueType(db.CliqueType)
     await initRegion(db.Region)
-    
-    crawling.start(db)
   }
 })()
 
