@@ -95,10 +95,13 @@ router.get('/', function (req, res) {
             {
               model: db.User,
               attributes: ['Id'],
-              on: {
-                active: 1,
+              through: { 
+                attributes: ['active'], 
+                where:{
+                  active: 1,
+                }
               },
-              as: 'RelatedUser',
+              as: 'SelfUser',
               include: [
                 {
                   model: db.InfectedUser,

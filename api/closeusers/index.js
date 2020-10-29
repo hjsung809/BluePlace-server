@@ -291,10 +291,12 @@ router.get('/', function (req, res) {
           include: [
             {
               model: db.User,
-              on: {
-                active: 1,
+              through: { 
+                where:{
+                  active: 1,
+                }
               },
-              as: 'RelatedUser',
+              as: 'SelfUser',
               attributes: ['Id', 'userEmail', 'userPhoneNumber'],
             },
           ],
