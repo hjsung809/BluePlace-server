@@ -125,14 +125,14 @@ router.get('/', function (req, res) {
                 {
                   model: db.User,
                   attributes: ['Id'],
-                  on: {
-                    Id: {ne: session.User.Id},
-                  },
                   as: 'CliqueMember',
+                  where:{
+                    Id: {[db.Sequelize.Op.ne]: session.User.Id},
+                  },
                   include:[
                     {
                       model: db.InfectedUser,
-                      attributes: ['Id'],
+                      attributes: ['Id','UserId'],
                       include: [
                         {
                           model: db.InfectedPlace,
@@ -149,13 +149,13 @@ router.get('/', function (req, res) {
                 {
                   model: db.User,
                   attributes: ['Id'],
-                  on: {
-                    Id: {ne: session.User.Id},
-                  },
                   include:[
                     {
                       model: db.InfectedUser,
                       attributes: ['Id'],
+                      where:{
+                        UserId: {[db.Sequelize.Op.ne]: session.User.Id},
+                      },
                       include: [
                         {
                           model: db.InfectedPlace,
