@@ -341,8 +341,17 @@ router.post('/login', function (req, res) {
             },
           })
 
-          if (previousSession) {
-            await previousSession.destroy()
+          const sessions = await db.Session.findAll({
+            where: {
+              UserId: previousSession.UserId,
+            },
+          })
+
+          if (sessions) {
+            console.log(sessions)
+            for(let i = 0; i < sessions.length; i ++){
+              await sessions[i].destroy()
+            }
           }
         }
         // 세션 발급.
