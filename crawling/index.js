@@ -74,38 +74,40 @@ async function updateDBInfectedPlace(result) {
   const date = Date.now()
   result.tbodyarr.forEach(place => {
     const address = place[3]
-    searchByAdressKAKAO(address.match(addressRe)[0])
-    .then(async function(result) {
-      // log(result)
-      const checkInfectedPlace = await db.InfectedPlace.find({
-        where: {
-          infectedPlaceName: place[3].split('(')[0].trim(),
-          longitude: result.documents[0].x,
-          latitude: result.documents[0].y,
-          firstVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
+    if(address.match(addressRe)){
+      searchByAdressKAKAO(address.match(addressRe)[0])
+      .then(async function(result) {
+        // log(result)
+        const checkInfectedPlace = await db.InfectedPlace.find({
+          where: {
+            infectedPlaceName: place[3].split('(')[0].trim(),
+            longitude: result.documents[0].x,
+            latitude: result.documents[0].y,
+            firstVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
+          }
+        })
+        console.log(checkInfectedPlace)
+        if(checkInfectedPlace) {
+          checkInfectedPlace.note = `소독: ${place[5]}`
+          checkInfectedPlace.save()
+        }else {
+          const infectedPlace = await db.InfectedPlace.create({
+            infectedPlaceName: place[3].split('(')[0].trim(),
+            infectedPlaceNameEn: `-`,
+            adress: place[3],
+            note: `소독: ${place[5]}`,
+            longitude: result.documents[0].x,
+            latitude: result.documents[0].y,
+            infectedDate: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
+            infectedTime: `00:00:00`,
+            createAt: date,
+            updateAt: date,
+            firstVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
+            lastVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 23:59:59`,
+          })
         }
       })
-      console.log(checkInfectedPlace)
-      if(checkInfectedPlace) {
-        checkInfectedPlace.note = `소독: ${place[5]}`
-        checkInfectedPlace.save()
-      }else {
-        const infectedPlace = await db.InfectedPlace.create({
-          infectedPlaceName: place[3].split('(')[0].trim(),
-          infectedPlaceNameEn: `-`,
-          adress: place[3],
-          note: `소독: ${place[5]}`,
-          longitude: result.documents[0].x,
-          latitude: result.documents[0].y,
-          infectedDate: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
-          infectedTime: `00:00:00`,
-          createAt: date,
-          updateAt: date,
-          firstVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 00:00:00`,
-          lastVisitTime: `2020-${place[4].split('~')[0].split('/')[0].padStart(2, '0')}-${place[4].split('~')[0].split('/')[1].padStart(2, '0')} 23:59:59`,
-        })
-      }
-    })
+    }
   });
 }
 
