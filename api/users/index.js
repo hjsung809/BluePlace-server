@@ -41,6 +41,7 @@ router.get('/', function (req, res) {
   const phoneNumber = req.query.phonenumber
   const email = req.query.email
   const name = req.query.name
+  const id = req.query.id
 
 
   ;(async () => {
@@ -64,15 +65,14 @@ router.get('/', function (req, res) {
           throw new Error('session invalid')
         }
 
-        if(!phoneNumber && !email && !name){
+        if(!phoneNumber && !email && !name && !id){
           errorMessage = 'Email이나 PhoneNumber가 없습니다.'
           throw new Error('session invalid')
         }
 
         let searchedUser
-        console.log(phoneNumber, email)
         if(phoneNumber){
-          searchedUser = await db.User.findOne({
+          searchedUser = await db.User.findAll({
             where: {
               userPhoneNumber: phoneNumber,
             },
@@ -81,9 +81,27 @@ router.get('/', function (req, res) {
             ]
           })
         }else if(email) {
-          searchedUser = await db.User.findOne({
+          searchedUser = await db.User.findAll({
             where: {
               userEmail: email,
+            },
+            attributes: [
+              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+            ]
+          })
+        }else if(name) {
+          searchedUser = await db.User.findAll({
+            where: {
+              userName: name,
+            },
+            attributes: [
+              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+            ]
+          })
+        }else if(id) {
+          searchedUser = await db.User.findAll({
+            where: {
+              Id: id,
             },
             attributes: [
               'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
@@ -348,7 +366,6 @@ router.post('/login', function (req, res) {
           })
 
           if (sessions) {
-            console.log(sessions)
             for(let i = 0; i < sessions.length; i ++){
               await sessions[i].destroy()
             }
@@ -364,7 +381,9 @@ router.post('/login', function (req, res) {
         // 쿠키 지정.
         res.cookie('BPSID', sessionId)
         res.status(200).json({
-          errorMessage: '로그인에 성공 했습니다.',
+          Id: user.Id, 
+          email: user.userEmail, 
+          phoneNumber: user.userPhoneNumber
         })
       } else {
         errorMessage = '비밀번호가 일치하지 않습니다.'

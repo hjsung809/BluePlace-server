@@ -55,17 +55,19 @@ async function updateDBStatistic(result) {
         regionName: region[0]
       }
     })
-    rg.stdDay = result.time
-    rg.updateDT = result.time
-    rg.deathCnt = parseInt(region[7].replace(/,/g, ''))
-    rg.isolClearCnt = parseInt(region[6].replace(/,/g, ''))
-    rg.qurRate = region[8] == '-' ? 0 : parseFloat(region[8])
-    rg.incDecAllCnt = parseInt(region[1].replace(/,/g, ''))
-    rg.incDecInCnt = parseInt(region[2].replace(/,/g, ''))
-    rg.incDecOutCnt = parseInt(region[3].replace(/,/g, ''))
-    rg.patientCnt = parseInt(region[4].replace(/,/g, ''))
-    rg.isolProcCnt = parseInt(region[5].replace(/,/g, ''))
-    await rg.save()
+    if(rg){
+      rg.stdDay = result.time
+      rg.updateDT = result.time
+      rg.deathCnt = parseInt(region[7].replace(/,/g, ''))
+      rg.isolClearCnt = parseInt(region[6].replace(/,/g, ''))
+      rg.qurRate = region[8] == '-' ? 0 : parseFloat(region[8])
+      rg.incDecAllCnt = parseInt(region[1].replace(/,/g, ''))
+      rg.incDecInCnt = parseInt(region[2].replace(/,/g, ''))
+      rg.incDecOutCnt = parseInt(region[3].replace(/,/g, ''))
+      rg.patientCnt = parseInt(region[4].replace(/,/g, ''))
+      rg.isolProcCnt = parseInt(region[5].replace(/,/g, ''))
+      await rg.save()
+    }
   })
   
 }

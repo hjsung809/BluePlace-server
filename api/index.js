@@ -18,7 +18,7 @@ app.use('/users', users)
 app.use('/regions', region)
 app.use('/cliques', cliques)
 app.use('/closeusers', closeusers)
-app.use('/infectedplace', infectedplace)
+app.use('/infectedplaces', infectedplace)
 
 
 export default app

@@ -93,6 +93,15 @@ router.get('/', function (req, res) {
           attributes: ['Id'],
           include: [
             {
+              model: db.InfectedUser,
+              attributes: ['Id'],
+              include: [
+                {
+                  model: db.InfectedPlace,
+                }
+              ]
+            },
+            {
               model: db.User,
               attributes: ['Id'],
               through: { 

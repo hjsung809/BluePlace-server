@@ -31,6 +31,11 @@ router.post('/request', function (req, res) {
           throw new Error('session invalid')
         }
 
+        if (relatedUserId == session.User.Id) {
+          errorMessage = '자신에게 주변인 등록은 할 수 없습니다.'
+          throw new Error('relatedUserId value invalid')
+        }
+
         if (!relatedUserId) {
           errorMessage = '주변인 Id가 입력되지 않았습니다.'
           throw new Error('relatedUserId value not exists')
