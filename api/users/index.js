@@ -358,19 +358,21 @@ router.post('/login', function (req, res) {
               Id: req.cookies.BPSID,
             },
           })
-
-          const sessions = await db.Session.findAll({
-            where: {
-              UserId: previousSession.UserId,
-            },
-          })
-
-          if (sessions) {
-            for(let i = 0; i < sessions.length; i ++){
-              await sessions[i].destroy()
+          if(previousSession){
+            const sessions = await db.Session.findAll({
+              where: {
+                UserId: previousSession.UserId,
+              },
+            })
+  
+            if (sessions) {
+              for(let i = 0; i < sessions.length; i ++){
+                await sessions[i].destroy()
+              }
             }
           }
         }
+
         // 세션 발급.
         const sessionId = uuid4()
         const session = await db.Session.create({
