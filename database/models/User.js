@@ -8,6 +8,11 @@ module.exports = function (sequlize, DataTypes) {
         primaryKey: true,
         allowNull: false,
       },
+      userNickname: {
+        type: DataTypes.STRING(20),
+        unique: true,
+        allowNull: false,
+      },
       userEmail: {
         type: DataTypes.STRING(1024),
         unique: true,

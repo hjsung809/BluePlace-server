@@ -19,7 +19,7 @@ router.post('/', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -78,7 +78,7 @@ router.delete('/', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -139,7 +139,7 @@ router.post('/join', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -160,15 +160,18 @@ router.post('/join', function (req, res) {
           if (puc.active) {
             errorMessage = '이미 가입된 그룹입니다.'
             throw new Error('already joined group.')
-          } else {
-            errorMessage = '이미 가입 요청을 보낸 그룹입니다.'
-            throw new Error('already join request sended.')
-          }
+          } 
+          // tmp active 1로
+          // else {
+          //   errorMessage = '이미 가입 요청을 보낸 그룹입니다.'
+          //   throw new Error('already join request sended.')
+          // }
         }
 
         // 관계를 만들고, 허가를 기다림.
+        // tmp active 1로
         await db.UserClique.create({
-          active: 0,
+          active: 1,
           UserId: session.User.Id,
           CliqueId,
         })
@@ -204,7 +207,7 @@ router.post('/withdraw', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -213,24 +216,108 @@ router.post('/withdraw', function (req, res) {
           errorMessage = '유효하지 않은 세션입니다.'
           throw new Error('session invalid')
         }
-
-        const userClique = await db.UserClique.findOne({
+        const clique = await db.Clique.findOne({
           where: {
-            UserId: session.User.Id,
-            CliqueId,
+            Id: CliqueId,
+            CliqueOwnerId: session.User.Id,
           },
         })
+        if(clique) {
 
-        if (!userClique) {
-          errorMessage = '이미 관계없는 그룹입니다.'
-          throw new Error('already withdrawn group.')
+          // 해당 유저가 가진 Clique
+          
+
+          if (!clique) {
+            errorMessage = '해당 그룹을 삭제할 수 없습니다.'
+            throw new Error('only owner can remove clique.')
+          }
+
+          await clique.destroy()
+
+          res.status(201).json({
+            message: '그룹 삭제에 성공하였습니다.',
+          })
+        }else{
+          const userClique = await db.UserClique.findOne({
+            where: {
+              UserId: session.User.Id,
+              CliqueId,
+            }
+          })
+  
+          if (!userClique) {
+            errorMessage = '이미 관계없는 그룹입니다.'
+            throw new Error('already withdrawn group.')
+          }
+  
+          await userClique.destroy()
+  
+          res.status(201).json({
+            message: '그룹 탈퇴에 성공하였습니다.',
+          })
         }
 
-        await userClique.destroy()
+        
+      } else {
+        errorMessage = '로그인이 되지않았습니다.'
+        throw new Error('session invalid')
+      }
+    } catch (e) {
+      console.log(e)
+      res.status(400).json({
+        errorMessage,
+      })
+    }
+  })()
+})
 
-        res.status(201).json({
-          message: '그룹 탈퇴에 성공하였습니다.',
+// 자기가 가입한 그룹 리스트업.
+router.get('/', function (req, res) {
+  ;(async () => {
+    let errorMessage = ''
+    try {
+      if (req.cookies.BPSID) {
+        const cliqueInfo = await db.Session.findOne({
+          where: {
+            Id: req.cookies.BPSID,
+          },
+          attributes: ['createdAt', 'updatedAt', 'UserId'],
+          include: [
+            {
+              // 세션으로 부터 유저 찾기.
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
+              include: [
+                {
+                  // 해당 유저가 멤버인 그룹 찾기.
+                  model: db.Clique,
+                  as: 'CliqueMember',
+                  include: [
+                    {
+                      // 해당 그룹 생성 유저 찾기.
+                      model: db.User,
+                      as: 'CliqueOwner',
+                      attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
+                    },
+                    {
+                      // 해당 그룹에 관계된 유저 찾기.
+                      model: db.User,
+                      as: 'CliqueMember',
+                      attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         })
+
+        if (!cliqueInfo) {
+          errorMessage = '세션이 유효하지 않습니다.'
+          throw new Error('session invalid')
+        }
+
+        res.status(200).json(cliqueInfo)
       } else {
         errorMessage = '로그인이 되지않았습니다.'
         throw new Error('session invalid')
@@ -259,7 +346,7 @@ router.get('/management', function (req, res) {
             {
               // 세션으로 부터 유저 찾기.
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
               include: [
                 {
                   // 해당 유저가 Owner인 그룹 찾기.
@@ -269,7 +356,7 @@ router.get('/management', function (req, res) {
                     {
                       // 해당 그룹에 관계된 유저 찾기.
                       model: db.User,
-                      attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                      attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
                     },
                   ],
                 },
@@ -298,10 +385,10 @@ router.get('/management', function (req, res) {
 })
 
 // 검색.
-router.get('/', function (req, res) {
+router.get('/search', function (req, res) {
 
   // Get Parameters
-  const cliqueName = req.query.cliquename
+  const cliqueName = req.query.cliqueName
   ;(async () => {
     let errorMessage = ''
     try {
@@ -315,9 +402,9 @@ router.get('/', function (req, res) {
             {
               // 세션으로 부터 유저 찾기.
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
-          ],
+          ]
         })
 
         if (!session) {
@@ -330,7 +417,25 @@ router.get('/', function (req, res) {
             cliqueName: {
               [db.Sequelize.Op.like]: '%' + cliqueName + '%'
             }
-          }
+          },
+          include: [
+            {
+              model: db.User,
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
+              as: 'CliqueOwner',
+            },
+            {
+              model: db.User,
+              as: 'CliqueMember',
+              through: {
+                where: {
+                  UserId: session.User.Id,
+                },
+                attributes: ['UserId', 'CliqueId', 'active']
+              },
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
+            }
+          ]
         })
         console.log(cliques)
         res.status(200).json(cliques)
@@ -362,7 +467,7 @@ router.post('/management/banish', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -433,7 +538,7 @@ router.post('/management/approve', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })

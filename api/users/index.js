@@ -55,7 +55,7 @@ router.get('/', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber']
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname']
             }
           ]
         })
@@ -77,7 +77,7 @@ router.get('/', function (req, res) {
               userPhoneNumber: phoneNumber,
             },
             attributes: [
-              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+              'Id', 'userEmail', 'userPhoneNumber', 'userNickname', 'createdAt'
             ]
           })
         }else if(email) {
@@ -86,7 +86,7 @@ router.get('/', function (req, res) {
               userEmail: email,
             },
             attributes: [
-              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+              'Id', 'userEmail', 'userPhoneNumber', 'userNickname', 'createdAt'
             ]
           })
         }else if(name) {
@@ -95,7 +95,7 @@ router.get('/', function (req, res) {
               userName: name,
             },
             attributes: [
-              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+              'Id', 'userEmail', 'userPhoneNumber', 'userNickname', 'createdAt'
             ]
           })
         }else if(id) {
@@ -104,7 +104,7 @@ router.get('/', function (req, res) {
               Id: id,
             },
             attributes: [
-              'Id', 'userEmail', 'userPhoneNumber', 'createdAt'
+              'Id', 'userEmail', 'userPhoneNumber', 'userNickname', 'createdAt'
             ]
           })
         }
@@ -144,7 +144,7 @@ router.get('/relatedusers', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber']
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname']
             }
           ]
         })
@@ -162,7 +162,7 @@ router.get('/relatedusers', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
               on: {
                 active: 1,
               },
@@ -178,7 +178,7 @@ router.get('/relatedusers', function (req, res) {
                 },
                 {
                   model: db.User,
-                  attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                  attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
                   on: {
                     Id: {ne: session.User.Id},
                   },
@@ -191,7 +191,7 @@ router.get('/relatedusers', function (req, res) {
               include: [
                 {
                   model: db.User,
-                  attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                  attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
                   on: {
                     Id: {ne: session.User.Id},
                   }
@@ -268,6 +268,7 @@ router.post('/', function (req, res) {
   const userEmail = req.body.userEmail
   const userPassword = req.body.userPassword
   const userPhoneNumber = req.body.userPhoneNumber
+  const userNickname = req.body.userNickname
 
   ;(async () => {
     let errorMessage = ''
@@ -297,10 +298,11 @@ router.post('/', function (req, res) {
       // console.log('암호화 비밀번호', password, password.length)
 
       await db.User.create({
+        userNickname,
         userEmail,
         userPassword: password.toString('base64'),
         salt: salt.toString('base64'),
-        userPhoneNumber,
+        userPhoneNumber
       })
       res.status(201).end()
     } catch (e) {
@@ -385,7 +387,8 @@ router.post('/login', function (req, res) {
         res.status(200).json({
           Id: user.Id, 
           email: user.userEmail, 
-          phoneNumber: user.userPhoneNumber
+          phoneNumber: user.userPhoneNumber,
+          userNickname: user.userNickname
         })
       } else {
         errorMessage = '비밀번호가 일치하지 않습니다.'
@@ -416,7 +419,7 @@ router.post('/infect', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })

@@ -21,7 +21,7 @@ router.post('/request', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             }
           ]
         })
@@ -124,7 +124,7 @@ router.delete('/request', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             }
           ]
         })
@@ -205,7 +205,7 @@ router.delete('/', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -279,7 +279,7 @@ router.get('/', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -292,7 +292,7 @@ router.get('/', function (req, res) {
           where: {
             Id: session.User.Id,
           },
-          attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+          attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
           include: [
             {
               model: db.User,
@@ -302,7 +302,7 @@ router.get('/', function (req, res) {
                 }
               },
               as: 'SelfUser',
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -338,7 +338,7 @@ router.get('/request', function (req, res) {
           include: [
             {
               model: db.User,
-              attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+              attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             },
           ],
         })
@@ -354,7 +354,7 @@ router.get('/request', function (req, res) {
             where: {
               Id: session.User.Id,
             },
-            attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             include: [
               {
                 model: db.User,
@@ -365,7 +365,7 @@ router.get('/request', function (req, res) {
                   },
                   attributes: ['UserId', 'RelatedUserId', 'active']
                 },
-                attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
               },
             ],
           })
@@ -375,7 +375,7 @@ router.get('/request', function (req, res) {
             where: {
               Id: session.User.Id,
             },
-            attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+            attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
             include: [
               {
                 model: db.User,
@@ -386,7 +386,7 @@ router.get('/request', function (req, res) {
                   },
                   attributes: ['UserId', 'RelatedUserId', 'active']
                 },
-                attributes: ['Id', 'userEmail', 'userPhoneNumber'],
+                attributes: ['Id', 'userEmail', 'userPhoneNumber', 'userNickname'],
               },
             ],
           })
